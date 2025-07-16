@@ -1,0 +1,949 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced Prompting Techniques Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+            color: #1f2937;
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 3rem;
+            color: white;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            transition: all 0.2s ease;
+            cursor: pointer;
+            border: 1px solid #e5e7eb;
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px -3px rgba(0, 0, 0, 0.1);
+        }
+
+        .card.expanded {
+            grid-column: 1 / -1;
+            transform: none;
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .card-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #1f2937;
+        }
+
+        .card-icon {
+            font-size: 1.2rem;
+            color: #6b7280;
+        }
+
+        .card-content {
+            display: none;
+        }
+
+        .card.expanded .card-content {
+            display: block;
+        }
+
+        .technique-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .technique-item {
+            background: #f8fafc;
+            padding: 1.25rem;
+            border-radius: 8px;
+            border-left: 3px solid #4f46e5;
+        }
+
+        .technique-title {
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 0.75rem;
+        }
+
+        .technique-example {
+            background: #f1f5f9;
+            padding: 1rem;
+            border-radius: 6px;
+            margin: 0.75rem 0;
+            font-family: 'SF Mono', Monaco, monospace;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+
+        .good-example {
+            border-left: 3px solid #10b981;
+        }
+
+        .bad-example {
+            border-left: 3px solid #ef4444;
+        }
+
+        .prompt-builder {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            margin-top: 2rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        .builder-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+
+        .checkbox {
+            margin-right: 0.75rem;
+            width: 16px;
+            height: 16px;
+            cursor: pointer;
+            accent-color: #4f46e5;
+        }
+
+        .preset-text {
+            background: #f8fafc;
+            padding: 0.75rem;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            color: #4b5563;
+            border-left: 3px solid #4f46e5;
+        }
+
+        .builder-section {
+            margin-bottom: 1.5rem;
+        }
+
+        .builder-label {
+            font-weight: 600;
+            color: #374151;
+            margin: 0;
+        }
+
+        .builder-input, .builder-select {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            font-family: inherit;
+            margin-top: 0.5rem;
+        }
+
+        .builder-input:focus, .builder-select:focus {
+            outline: none;
+            border-color: #4f46e5;
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+        }
+
+        .output-area {
+            background: #1f2937;
+            color: #f9fafb;
+            padding: 1.5rem;
+            border-radius: 8px;
+            font-family: 'SF Mono', Monaco, monospace;
+            font-size: 0.9rem;
+            line-height: 1.6;
+            min-height: 100px;
+            white-space: pre-wrap;
+            margin-top: 0.5rem;
+        }
+
+        .copy-btn {
+            background: #4f46e5;
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: background 0.2s;
+            margin-top: 0.75rem;
+        }
+
+        .copy-btn:hover {
+            background: #4338ca;
+        }
+
+        .tips-section {
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+            color: white;
+            padding: 2rem;
+            border-radius: 12px;
+            margin-top: 2rem;
+        }
+
+        .tips-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+
+        .tips-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .tip-item {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 1.5rem;
+            border-radius: 8px;
+            backdrop-filter: blur(10px);
+        }
+
+        .tip-title {
+            font-weight: 600;
+            margin-bottom: 0.75rem;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+            
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .technique-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 Advanced Prompting Techniques Dashboard</h1>
+            <p>Master the art of AI communication with proven strategies and templates</p>
+        </div>
+
+        <div class="dashboard-grid">
+            <div class="card" onclick="toggleCard(this)">
+                <div class="card-header">
+                    <h3 class="card-title">📋 Role-Based Prompting</h3>
+                    <span class="card-icon">+</span>
+                </div>
+                <div class="card-content">
+                    <p>Define specific roles and objectives to get targeted responses.</p>
+                    <div class="technique-grid">
+                        <div class="technique-item">
+                            <div class="technique-title">Basic Role Assignment</div>
+                            <div class="technique-example good-example">
+                                &lt;Role_Objective&gt;: You are a digital marketing consultant. Your goal is to write a blog post that teaches small business owners how to get more leads through email marketing.
+                            </div>
+                        </div>
+                        <div class="technique-item">
+                            <div class="technique-title">Multi-Role Iteration</div>
+                            <div class="technique-example good-example">
+                                1. "Act as a copywriter and create the content"<br>
+                                2. "Now act as the target customer and critique it"<br>
+                                3. "Finally, act as a conversion expert and optimize"
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card" onclick="toggleCard(this)">
+                <div class="card-header">
+                    <h3 class="card-title">⚡ Affirmative Commands</h3>
+                    <span class="card-icon">+</span>
+                </div>
+                <div class="card-content">
+                    <p>Use direct, commanding language for better instruction following.</p>
+                    <div class="technique-grid">
+                        <div class="technique-item">
+                            <div class="technique-title">Strong vs Weak Commands</div>
+                            <div class="technique-example good-example">
+                                ✅ "Your task is to analyze this data"<br>
+                                ✅ "You must include these elements"<br>
+                                ✅ "Generate a comprehensive report"
+                            </div>
+                            <div class="technique-example bad-example">
+                                ❌ "Can you please maybe look at this?"<br>
+                                ❌ "Try to generate something"<br>
+                                ❌ "Could you possibly help with..."
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card" onclick="toggleCard(this)">
+                <div class="card-header">
+                    <h3 class="card-title">🧠 Cognitive Enhancement</h3>
+                    <span class="card-icon">+</span>
+                </div>
+                <div class="card-content">
+                    <p>Activate step-by-step thinking and reasoning processes.</p>
+                    <div class="technique-grid">
+                        <div class="technique-item">
+                            <div class="technique-title">Thinking Prompts</div>
+                            <div class="technique-example good-example">
+                                "Think step-by-step before responding"<br>
+                                "Break this down into logical components"<br>
+                                "Consider multiple perspectives before deciding"<br>
+                                "Explain your reasoning process"
+                            </div>
+                        </div>
+                        <div class="technique-item">
+                            <div class="technique-title">Uncertainty Assessment</div>
+                            <div class="technique-example good-example">
+                                "Before you answer, assess the uncertainty of your response. If it's greater than 0.1, ask me clarifying questions until the uncertainty is 0.1 or lower."
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card" onclick="toggleCard(this)">
+                <div class="card-header">
+                    <h3 class="card-title">📊 Answer Quality Leveling</h3>
+                    <span class="card-icon">+</span>
+                </div>
+                <div class="card-content">
+                    <p>Specify the depth and quality level you need.</p>
+                    <div class="technique-grid">
+                        <div class="technique-item">
+                            <div class="technique-title">Level-Based Requests</div>
+                            <div class="technique-example good-example">
+                                "Give me a Level 1 answer (basic), Level 2 (detailed), Level 3 (creative)"<br>
+                                "Level 1 is basic, Level 2 is okay, Level 3 is great. Give me a Level 4 output."<br>
+                                "Start with basic, then give expert-level insights"
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card" onclick="toggleCard(this)">
+                <div class="card-header">
+                    <h3 class="card-title">🎯 Incentive-Based Prompting</h3>
+                    <span class="card-icon">+</span>
+                </div>
+                <div class="card-content">
+                    <p>Motivate better outputs by emphasizing importance and stakes.</p>
+                    <div class="technique-grid">
+                        <div class="technique-item">
+                            <div class="technique-title">High-Stakes Motivation</div>
+                            <div class="technique-example good-example">
+                                "This is crucial for our campaign success"<br>
+                                "The best response will be implemented immediately"<br>
+                                "Your expertise here directly impacts revenue"<br>
+                                "Think like this will be seen by 10,000 customers"
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card" onclick="toggleCard(this)">
+                <div class="card-header">
+                    <h3 class="card-title">🔄 Multi-Step Sequences</h3>
+                    <span class="card-icon">+</span>
+                </div>
+                <div class="card-content">
+                    <p>Break complex tasks into sequential steps for better results.</p>
+                    <div class="technique-grid">
+                        <div class="technique-item">
+                            <div class="technique-title">Research → Strategy → Execution</div>
+                            <div class="technique-example good-example">
+                                1. "Analyze competitor content and identify top 3 strategies"<br>
+                                2. "Using those insights, create our unique positioning"<br>
+                                3. "Now generate content that implements this positioning"
+                            </div>
+                        </div>
+                        <div class="technique-item">
+                            <div class="technique-title">Create → Critique → Optimize</div>
+                            <div class="technique-example good-example">
+                                1. "Generate initial content draft"<br>
+                                2. "Act as target audience and provide feedback"<br>
+                                3. "Incorporate feedback and create final version"
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card" onclick="toggleCard(this)">
+                <div class="card-header">
+                    <h3 class="card-title">⚙️ Constraint Setting</h3>
+                    <span class="card-icon">+</span>
+                </div>
+                <div class="card-content">
+                    <p>Set specific parameters and limitations for focused outputs.</p>
+                    <div class="technique-grid">
+                        <div class="technique-item">
+                            <div class="technique-title">Content Constraints</div>
+                            <div class="technique-example good-example">
+                                "Write at 8th grade reading level"<br>
+                                "Keep under 150 words"<br>
+                                "Avoid these buzzwords: [list]"<br>
+                                "Must include these elements: [requirements]"
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card" onclick="toggleCard(this)">
+                <div class="card-header">
+                    <h3 class="card-title">🔍 Enhancement Techniques</h3>
+                    <span class="card-icon">+</span>
+                </div>
+                <div class="card-content">
+                    <p>Advanced techniques for better prompt crafting.</p>
+                    <div class="technique-grid">
+                        <div class="technique-item">
+                            <div class="technique-title">Response Improvement</div>
+                            <div class="technique-example good-example">
+                                "Ask me five questions that would improve your response"<br>
+                                "Be honest, not agreeable"<br>
+                                "Ask clarifying questions, reframe and summarize the request"
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card" onclick="toggleCard(this)">
+                <div class="card-header">
+                    <h3 class="card-title">🎭 Critique Answers</h3>
+                    <span class="card-icon">+</span>
+                </div>
+                <div class="card-content">
+                    <p>Challenge responses to improve quality and find gaps.</p>
+                    <div class="technique-grid">
+                        <div class="technique-item">
+                            <div class="technique-title">Critical Analysis</div>
+                            <div class="technique-example good-example">
+                                "Play devil's advocate"<br>
+                                "Challenge this"<br>
+                                "What's missing"
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="prompt-builder">
+            <h2 class="builder-title">🛠️ Interactive Prompt Builder</h2>
+            
+
+
+            <div class="builder-section">
+                <div class="section-header">
+                    <input type="checkbox" id="roleCheckbox" class="checkbox" onchange="updatePrompt()" checked>
+                    <label class="builder-label">Role & Objective:</label>
+                </div>
+                <select class="builder-select" id="roleType" onchange="handleRoleChange()">
+                    <option value="expert">Expert Copywriter (10+ years)</option>
+                    <option value="d2c">D2C Copywriter</option>
+                    <option value="b2b">B2B Copywriter</option>
+                    <option value="strategist">Marketing Strategist</option>
+                    <option value="content">Content Creator</option>
+                    <option value="social">Social Media Manager</option>
+                    <option value="email">Email Marketing Specialist</option>
+                    <option value="custom">Custom Role</option>
+                </select>
+                <select class="builder-select" id="industryType" onchange="handleRoleChange()" style="margin-top: 0.5rem;">
+                    <option value="">Select Industry (Optional)</option>
+                    <option value="saas">SaaS/Tech</option>
+                    <option value="ecommerce">E-commerce</option>
+                    <option value="healthcare">Healthcare</option>
+                    <option value="finance">Finance</option>
+                    <option value="education">Education</option>
+                    <option value="realestate">Real Estate</option>
+                    <option value="fitness">Fitness/Wellness</option>
+                    <option value="food">Food & Beverage</option>
+                    <option value="fashion">Fashion & Beauty</option>
+                    <option value="automotive">Automotive</option>
+                    <option value="travel">Travel & Hospitality</option>
+                    <option value="consulting">Consulting</option>
+                </select>
+                <input type="text" class="builder-input" id="roleInput" placeholder="e.g., You are a digital marketing consultant..." onkeyup="updatePrompt()" style="margin-top: 0.5rem;">
+            </div>
+
+            <div class="builder-section">
+                <div class="section-header">
+                    <input type="checkbox" id="commandCheckbox" class="checkbox" onchange="updatePrompt()" checked>
+                    <label class="builder-label">Command Style:</label>
+                </div>
+                <select class="builder-select" id="commandStyle" onchange="updatePrompt()">
+                    <option value="">Select command style...</option>
+                    <option value="Your task is to">Your task is to</option>
+                    <option value="You must">You must</option>
+                    <option value="Generate">Generate</option>
+                    <option value="Analyze and provide">Analyze and provide</option>
+                </select>
+            </div>
+
+            <div class="builder-section">
+                <div class="section-header">
+                    <input type="checkbox" id="requestCheckbox" class="checkbox" onchange="updatePrompt()" checked>
+                    <label class="builder-label">Main Request:</label>
+                </div>
+                <select class="builder-select" id="presetGoal" onchange="handlePresetGoalChange()">
+                    <option value="">Select a pre-set goal...</option>
+                    <option value="blog">SEO-Optimized Blog Post</option>
+                    <option value="hooks">Hooks/Trending Ideas</option>
+                    <option value="email">Email Copy</option>
+                    <option value="ad">Ad Copy</option>
+                    <option value="sequence">Email Sequence</option>
+                    <option value="custom">Custom (Manual Entry)</option>
+                </select>
+                <input type="text" class="builder-input" id="mainRequest" placeholder="e.g., create a blog post about email marketing..." onkeyup="updatePrompt()" style="margin-top: 0.5rem;">
+            </div>
+
+            <div class="builder-section">
+                <div class="section-header">
+                    <input type="checkbox" id="qualityCheckbox" class="checkbox" onchange="updatePrompt()" checked>
+                    <label class="builder-label">Quality Level:</label>
+                </div>
+                <select class="builder-select" id="qualityLevel" onchange="updatePrompt()">
+                    <option value="">Select quality level...</option>
+                    <option value="Level 1 is a basic answer, Level 2 is detailed, Level 3 is creative. Give me a Level 4 answer.">Level 4 (Expert)</option>
+                    <option value="Level 1 is a basic answer, Level 2 is detailed, Level 3 is creative. Give me a Level 3 answer.">Level 3 (Creative)</option>
+                    <option value="Level 1 is a basic answer, Level 2 is detailed, Level 3 is creative. Give me a Level 2 answer.">Level 2 (Detailed)</option>
+                    <option value="Level 1 is a basic answer, Level 2 is detailed, Level 3 is creative. Give me a Level 1 answer.">Level 1 (Basic)</option>
+                </select>
+            </div>
+
+            <div class="builder-section">
+                <div class="section-header">
+                    <input type="checkbox" id="thinkingCheckbox" class="checkbox" onchange="updatePrompt()">
+                    <label class="builder-label">Thinking Enhancement:</label>
+                </div>
+                <select class="builder-select" id="thinking" onchange="updatePrompt()">
+                    <option value="">Select thinking enhancement...</option>
+                    <option value="Think step-by-step before responding.">Think step-by-step</option>
+                    <option value="Break this down into logical components.">Break into components</option>
+                    <option value="Consider multiple perspectives before deciding.">Multiple perspectives</option>
+                </select>
+            </div>
+
+            <div class="builder-section">
+                <div class="section-header">
+                    <input type="checkbox" id="uncertaintyCheckbox" class="checkbox" onchange="updatePrompt()">
+                    <label class="builder-label">Uncertainty Assessment:</label>
+                </div>
+                <div class="preset-text">Before you answer, assess the uncertainty of your response. If it's greater than 0.1, ask me clarifying questions until the uncertainty is 0.1 or lower.</div>
+            </div>
+
+            <div class="builder-section">
+                <div class="section-header">
+                    <input type="checkbox" id="honestyCheckbox" class="checkbox" onchange="updatePrompt()">
+                    <label class="builder-label">Honesty Instruction:</label>
+                </div>
+                <div class="preset-text">Be honest, not agreeable.</div>
+            </div>
+
+            <div class="builder-section">
+                <div class="section-header">
+                    <input type="checkbox" id="defaultCheckbox" class="checkbox" onchange="updatePrompt()">
+                    <label class="builder-label">Default Instructions:</label>
+                </div>
+                <div class="preset-text">Ask clarifying questions, Reframe and summarise the request (so I can check it had the same understanding), Suggest an improved prompt to address the request, Give feedback on my request.</div>
+            </div>
+
+            <div class="builder-section">
+                <div class="section-header">
+                    <input type="checkbox" id="critiqueCheckbox" class="checkbox" onchange="updatePrompt()">
+                    <label class="builder-label">Critique Answers:</label>
+                </div>
+                <select class="builder-select" id="critique" onchange="updatePrompt()">
+                    <option value="">Select critique approach...</option>
+                    <option value="Play devil's advocate">Play devil's advocate</option>
+                    <option value="Challenge this">Challenge this</option>
+                    <option value="What's missing">What's missing</option>
+                </select>
+            </div>
+
+            <div class="builder-section">
+                <div class="section-header">
+                    <input type="checkbox" id="incentiveCheckbox" class="checkbox" onchange="updatePrompt()">
+                    <label class="builder-label">Incentive Statement:</label>
+                </div>
+                <input type="text" class="builder-input" id="incentiveInput" placeholder="e.g., This is crucial for our campaign success..." onkeyup="updatePrompt()">
+            </div>
+
+            <div class="builder-section">
+                <div class="section-header">
+                    <input type="checkbox" id="constraintsCheckbox" class="checkbox" onchange="updatePrompt()">
+                    <label class="builder-label">Constraints:</label>
+                </div>
+                <input type="text" class="builder-input" id="constraints" placeholder="e.g., Keep under 500 words, write at 8th grade level..." onkeyup="updatePrompt()">
+            </div>
+
+            <div class="builder-section">
+                <div class="section-header">
+                    <input type="checkbox" id="outputFormatCheckbox" class="checkbox" onchange="updatePrompt()">
+                    <label class="builder-label">Output Format:</label>
+                </div>
+                <input type="text" class="builder-input" id="outputFormat" placeholder="e.g., Provide response in bullet points, use JSON format, create a table..." onkeyup="updatePrompt()">
+            </div>
+
+            <div class="builder-section">
+                <div class="section-header">
+                    <input type="checkbox" id="examplesCheckbox" class="checkbox" onchange="updatePrompt()">
+                    <label class="builder-label">Examples:</label>
+                </div>
+                <textarea class="builder-input" id="examples" placeholder="e.g., Good example: [your example]&#10;Bad example: [counter-example]&#10;Expected output: [desired result]" onkeyup="updatePrompt()" rows="4"></textarea>
+            </div>
+
+            <div class="builder-section">
+                <div class="section-header">
+                    <input type="checkbox" id="additionalContextCheckbox" class="checkbox" onchange="updatePrompt()">
+                    <label class="builder-label">Additional Context:</label>
+                </div>
+                <textarea class="builder-input" id="additionalContext" placeholder="e.g., Company background, target audience details, specific requirements, relevant data, or any other context that would help generate a better response..." onkeyup="updatePrompt()" rows="4"></textarea>
+            </div>
+
+            <div class="builder-section">
+                <div class="section-header">
+                    <input type="checkbox" id="enhancementCheckbox" class="checkbox" onchange="updatePrompt()" checked>
+                    <label class="builder-label">Response Enhancement:</label>
+                </div>
+                <div class="preset-text">Ask me five questions that would improve your response.</div>
+            </div>
+
+            <div class="builder-section">
+                <label class="builder-label">Generated Prompt:</label>
+                <div class="output-area" id="generatedPrompt">Your custom prompt will appear here...</div>
+                <button class="copy-btn" onclick="copyPrompt()">📋 Copy Prompt</button>
+            </div>
+        </div>
+
+        <div class="tips-section">
+            <h2 class="tips-title">💡 Pro Tips for Better Prompting</h2>
+            <div class="tips-grid">
+                <div class="tip-item">
+                    <div class="tip-title">Be Specific</div>
+                    <p>Vague requests get vague responses. Include context, examples, and desired outcomes.</p>
+                </div>
+                <div class="tip-item">
+                    <div class="tip-title">Use Examples</div>
+                    <p>Show what you want with positive and negative examples to guide the AI.</p>
+                </div>
+                <div class="tip-item">
+                    <div class="tip-title">Iterate & Refine</div>
+                    <p>Start with a basic prompt, then refine based on the responses you get.</p>
+                </div>
+                <div class="tip-item">
+                    <div class="tip-title">Test Different Approaches</div>
+                    <p>Try different role assignments, command styles, and structures to find what works best.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function toggleCard(card) {
+            const isExpanded = card.classList.contains('expanded');
+            
+            document.querySelectorAll('.card').forEach(c => {
+                c.classList.remove('expanded');
+                c.querySelector('.card-icon').textContent = '+';
+            });
+            
+            if (!isExpanded) {
+                card.classList.add('expanded');
+                card.querySelector('.card-icon').textContent = '−';
+            }
+        }
+
+        function handlePresetGoalChange() {
+            const presetGoal = document.getElementById('presetGoal').value;
+            const commandStyle = document.getElementById('commandStyle');
+            const mainRequest = document.getElementById('mainRequest');
+            
+            switch(presetGoal) {
+                case 'blog':
+                    commandStyle.value = 'Your task is to';
+                    mainRequest.value = 'write a 1,000-word blog post on [topic] with proper keyword placement, readability, and conversion-focused CTAs';
+                    break;
+                case 'hooks':
+                    commandStyle.value = 'Generate';
+                    mainRequest.value = '5 engaging hooks and a structured post about [topic] using high-performing viral patterns';
+                    break;
+                case 'email':
+                    commandStyle.value = 'Your task is to';
+                    mainRequest.value = 'write compelling email copy with subject + preview texts that are short, have emoji, attention grabbing, and result in opens';
+                    break;
+                case 'ad':
+                    commandStyle.value = 'Your task is to';
+                    mainRequest.value = 'write 3 variations of ad copy optimized for [Facebook/Google/Twitter] with strong CTAs for [product/service]';
+                    break;
+                case 'sequence':
+                    commandStyle.value = 'Your task is to';
+                    mainRequest.value = 'write a 5-email sequence for [product/service] that warms up leads, builds trust, and converts them into buyers';
+                    break;
+                case 'custom':
+                    commandStyle.value = '';
+                    mainRequest.value = '';
+                    break;
+                default:
+                    break;
+            }
+            updatePrompt();
+        }
+
+        function handleRoleChange() {
+            const roleType = document.getElementById('roleType').value;
+            const industry = document.getElementById('industryType').value;
+            const roleInput = document.getElementById('roleInput');
+            
+            let baseRole = '';
+            let industryText = industry ? ` specializing in the ${getIndustryText(industry)} industry` : '';
+            
+            switch(roleType) {
+                case 'expert':
+                    baseRole = 'You are an expert copywriter with 10+ years of experience and knowledge of proven conversion marketing psychological hacks and tips and tricks';
+                    break;
+                case 'd2c':
+                    baseRole = 'You are an expert D2C copywriter with 5+ years of experience and knowledge of proven conversion marketing psychological hacks and tips and tricks';
+                    break;
+                case 'b2b':
+                    baseRole = 'You are an expert B2B copywriter with 5+ years of experience specializing in business-to-business marketing and conversion psychology';
+                    break;
+                case 'strategist':
+                    baseRole = 'You are a marketing strategist with 8+ years of experience in developing comprehensive marketing campaigns and conversion strategies';
+                    break;
+                case 'content':
+                    baseRole = 'You are a content creator with 5+ years of experience in creating engaging, viral-worthy content across multiple platforms';
+                    break;
+                case 'social':
+                    baseRole = 'You are a social media manager with 5+ years of experience in creating high-engagement content and managing social media campaigns';
+                    break;
+                case 'email':
+                    baseRole = 'You are an email marketing specialist with 5+ years of experience in creating high-converting email campaigns and sequences';
+                    break;
+                case 'custom':
+                    baseRole = '';
+                    industryText = '';
+                    break;
+                default:
+                    baseRole = 'You are an expert copywriter with 10+ years of experience and knowledge of proven conversion marketing psychological hacks and tips and tricks';
+                    break;
+            }
+            
+            roleInput.value = baseRole + industryText;
+            updatePrompt();
+        }
+
+        function getIndustryText(industry) {
+            const industries = {
+                'saas': 'SaaS/Tech',
+                'ecommerce': 'E-commerce',
+                'healthcare': 'Healthcare',
+                'finance': 'Finance',
+                'education': 'Education',
+                'realestate': 'Real Estate',
+                'fitness': 'Fitness/Wellness',
+                'food': 'Food & Beverage',
+                'fashion': 'Fashion & Beauty',
+                'automotive': 'Automotive',
+                'travel': 'Travel & Hospitality',
+                'consulting': 'Consulting'
+            };
+            return industries[industry] || industry;
+        }
+
+        function updatePrompt() {
+            const role = document.getElementById('roleCheckbox').checked ? document.getElementById('roleInput').value : '';
+            const command = document.getElementById('commandCheckbox').checked ? document.getElementById('commandStyle').value : '';
+            const request = document.getElementById('requestCheckbox').checked ? document.getElementById('mainRequest').value : '';
+            const quality = document.getElementById('qualityCheckbox').checked ? document.getElementById('qualityLevel').value : '';
+            const thinking = document.getElementById('thinkingCheckbox').checked ? document.getElementById('thinking').value : '';
+            const uncertainty = document.getElementById('uncertaintyCheckbox').checked ? 'Before you answer, assess the uncertainty of your response. If it\'s greater than 0.1, ask me clarifying questions until the uncertainty is 0.1 or lower.' : '';
+            const honesty = document.getElementById('honestyCheckbox').checked ? 'Be honest, not agreeable.' : '';
+            const defaultInstr = document.getElementById('defaultCheckbox').checked ? 'Ask clarifying questions, Reframe and summarise the request (so I can check it had the same understanding), Suggest an improved prompt to address the request, Give feedback on my request.' : '';
+            const critique = document.getElementById('critiqueCheckbox').checked ? document.getElementById('critique').value : '';
+            const incentive = document.getElementById('incentiveCheckbox').checked ? document.getElementById('incentiveInput').value : '';
+            const constraints = document.getElementById('constraintsCheckbox').checked ? document.getElementById('constraints').value : '';
+            const outputFormat = document.getElementById('outputFormatCheckbox').checked ? document.getElementById('outputFormat').value : '';
+            const examples = document.getElementById('examplesCheckbox').checked ? document.getElementById('examples').value : '';
+            const additionalContext = document.getElementById('additionalContextCheckbox').checked ? document.getElementById('additionalContext').value : '';
+            const enhancement = document.getElementById('enhancementCheckbox').checked ? 'Ask me five questions that would improve your response.' : '';
+
+            let prompt = '';
+
+            if (role) {
+                prompt += `<Role_Objective>: ${role}\n\n`;
+            }
+
+            if (uncertainty) {
+                prompt += `${uncertainty}\n\n`;
+            }
+
+            if (honesty) {
+                prompt += `${honesty}\n\n`;
+            }
+
+            if (defaultInstr) {
+                prompt += `${defaultInstr}\n\n`;
+            }
+
+            if (thinking) {
+                prompt += `${thinking}\n\n`;
+            }
+
+            if (critique) {
+                prompt += `${critique}\n\n`;
+            }
+
+            if (incentive) {
+                prompt += `${incentive}\n\n`;
+            }
+
+            if (command && request) {
+                prompt += `${command} ${request}.\n\n`;
+            } else if (request) {
+                prompt += `${request}\n\n`;
+            }
+
+            if (examples) {
+                prompt += `Examples:\n${examples}\n\n`;
+            }
+
+            if (additionalContext) {
+                prompt += `Additional Context:\n${additionalContext}\n\n`;
+            }
+
+            if (outputFormat) {
+                prompt += `Output Format: ${outputFormat}\n\n`;
+            }
+
+            if (quality) {
+                prompt += `${quality}\n\n`;
+            }
+
+            if (constraints) {
+                prompt += `Constraints: ${constraints}\n\n`;
+            }
+
+            if (enhancement) {
+                prompt += `${enhancement}`;
+            }
+
+            document.getElementById('generatedPrompt').textContent = prompt || 'Your custom prompt will appear here...';
+        }
+
+        function copyPrompt() {
+            const promptText = document.getElementById('generatedPrompt').textContent;
+            if (promptText && promptText !== 'Your custom prompt will appear here...') {
+                navigator.clipboard.writeText(promptText).then(() => {
+                    const btn = document.querySelector('.copy-btn');
+                    const originalText = btn.textContent;
+                    btn.textContent = '✅ Copied!';
+                    setTimeout(() => {
+                        btn.textContent = originalText;
+                    }, 2000);
+                }).catch(err => {
+                    console.error('Failed to copy: ', err);
+                    // Fallback for older browsers
+                    const textArea = document.createElement('textarea');
+                    textArea.value = promptText;
+                    document.body.appendChild(textArea);
+                    textArea.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(textArea);
+                    
+                    const btn = document.querySelector('.copy-btn');
+                    const originalText = btn.textContent;
+                    btn.textContent = '✅ Copied!';
+                    setTimeout(() => {
+                        btn.textContent = originalText;
+                    }, 2000);
+                });
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // Set default values
+            document.getElementById('roleType').value = 'expert';
+            document.getElementById('presetGoal').value = 'blog';
+            document.getElementById('qualityLevel').value = 'Level 1 is a basic answer, Level 2 is detailed, Level 3 is creative. Give me a Level 4 answer.';
+            document.getElementById('thinking').value = 'Think step-by-step before responding.';
+            document.getElementById('incentiveInput').value = 'This is crucial for our campaign success';
+            document.getElementById('constraints').value = 'Keep under 1500 words, write at 8th grade level, include 3 specific examples';
+            document.getElementById('outputFormat').value = 'Structure as: Introduction, 3 main strategies with subpoints, conclusion with call-to-action';
+            document.getElementById('examples').value = 'Good example: "Send weekly newsletters with valuable tips"\nBad example: "Spam customers daily with sales pitches"\nExpected output: Actionable strategies with specific steps';
+            
+            // Initialize role and preset goal
+            handleRoleChange();
+            handlePresetGoalChange();
+        });
+    </script>
+</body>
+</html>
